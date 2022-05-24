@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 const express = require('express')
-const { getAllTeams, getTeamById, addTeam } = require('./controllers/team')
+const { getAllTeams, getTeamById, addTeam } = require('./controllers/teams')
 
 const app = express()
 
