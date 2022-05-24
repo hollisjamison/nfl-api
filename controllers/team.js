@@ -1,58 +1,43 @@
-/* eslint-disable max-len */
-const teams = require('../teams')
+const { Teams } = require('../models/index')
 
-const getAllTeams = (request, response) => {
-  return response.status(200).send(teams)
+const getAllTeams = async (request, response) => {
+  const teams = await Teams.findAll()
+
+  return response.send(teams)
 }
 
-const getTeamById = (request, response) => {
-  const id = Number(request.params.id)
+const getTeamById = async (request, response) => {
+  const { id } = request.params
 
-  const foundTeam = teams.find((team) => {
-    return team.id === id
-  })
+  const matchingTeam = await Teams.findOne({ where: { id } })
 
-  if (foundTeam) {
-    return response.status(200).send(foundTeam)
+  if (matchingTeam) {
+    return response.send(matchingTeam)
   } else {
-    return response.status(404).send('Team ID not found')
+    return response.sendStatus(404)
   }
 }
 
-const getNewId = () => {
-  const longestCurrentId = teams.reduce((highestId, team) => {
-    if (team.id > highestId) {
-      return team.id
-    } else {
-      return highestId
-    }
-  }, 0)
-
-  return longestCurrentId + 1
-}
-
-const addTeam = (request, response) => {
+const addTeam = async (request, response) => {
   const {
     location, mascot, abbreviation, conference, division
   } = request.body
 
   if (!location || !mascot || !abbreviation || !conference || !division) {
-    return response.status(400).send('Please include all required fields: location, mascot, abbreviation, conference, division')
+    return response
+      .status(400)
+      .send('The following fields are required: location, mascot, abbreviation, conference, division')
   }
 
-  const newId = getNewId()
-
-  if (!newId) {
-    return response.status(500).send('Unable to add team due to database error.')
-  }
-
-  const newTeam = {
-    location, mascot, abbreviation, conference, division, id: newId
-  }
-
-  teams.push(newTeam)
+  const newTeam = await Teams.create({
+    location,
+    mascot,
+    abbreviation,
+    conference,
+    division,
+  })
 
   return response.status(201).send(newTeam)
 }
 
-module.exports = { getTeamById, getAllTeams, addTeam }
+module.exports = { getAllTeams, getTeamById, addTeam }
